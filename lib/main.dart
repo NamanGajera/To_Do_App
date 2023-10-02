@@ -14,6 +14,7 @@ class ToDoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.light,
       theme: nAppTheme.lighttheme,
       darkTheme: nAppTheme.darktheme,
       home: const LoginScreen(),
