@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:to_do_app/Const/Text.dart';
@@ -6,6 +9,7 @@ import 'package:to_do_app/Utils/Decorations/TextformFieldDecoration.dart';
 import 'package:to_do_app/Const/Colors.dart';
 import 'package:to_do_app/Widget/Buttons/RoundButton.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:to_do_app/Utils/Helper/helper.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -19,6 +23,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final passwordcontoller = TextEditingController();
   final namecontroller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  final _auth = FirebaseAuth.instance;
+  bool loading = false;
+
+  @override
+  void dispose() {
+    emailcontroller.dispose();
+    passwordcontoller.dispose();
+    namecontroller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -50,6 +65,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           color: nColors.primarycolor,
                         ),
                       ),
+                      onTapOutside: nHelpper().hidekeybord,
                       validator: ValidationBuilder().required().build(),
                     ),
                     const SizedBox(height: 10),
@@ -63,6 +79,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           color: nColors.primarycolor,
                         ),
                       ),
+                      onTapOutside: nHelpper().hidekeybord,
                       validator: ValidationBuilder().required().email().build(),
                     ),
                     const SizedBox(height: 10),
@@ -76,6 +93,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           color: nColors.primarycolor,
                         ),
                       ),
+                      onTapOutside: nHelpper().hidekeybord,
                       validator:
                           ValidationBuilder().required().minLength(6).build(),
                     ),
@@ -83,23 +101,51 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    nForgotpass,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: nColors.linkcolor,
-                        ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
               RoundButton(
+                loading: loading,
                 buttonname: nsignup,
-                onTap: () {
-                  if (_formkey.currentState!.validate()) {}
+                onTap: () async {
+                  if (_formkey.currentState!.validate()) {
+                    setState(() {
+                      loading = true;
+                    });
+
+                    try {
+                      await _auth
+                          .createUserWithEmailAndPassword(
+                        email: emailcontroller.text.toString().trim(),
+                        password: passwordcontoller.text.toString().trim(),
+                      )
+                          .then((value) {
+                        setState(() {
+                          loading = false;
+                        });
+                        nHelpper().nsuccesstoast(context, 'SignUp');
+                      });
+                    } on FirebaseAuthException catch (e) {
+                      setState(() {
+                        loading = false;
+                      });
+                      nHelpper().nerrortoast(context, e.code);
+                    }
+                    // _auth
+                    //     .createUserWithEmailAndPassword(
+                    //   email: emailcontroller.text.toString().trim(),
+                    //   password: passwordcontoller.text.toString().trim(),
+                    // )
+                    //     .then((value) {
+                    //   setState(() {
+                    //     loading = false;
+                    //   });
+                    //   // nHelpper().ntoastmessage('SignUp Succcessful');
+                    // }).onError((error, stackTrace) {
+                    //   setState(() {
+                    //     loading = false;
+                    //   });
+                    //   // nHelpper().ntoastmessage(error.toString());
+                    //   nHelpper().nerrortoast(context, error.toString());
+                    // });
+                  }
                 },
               ),
               const SizedBox(height: 10),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:to_do_app/Const/Colors.dart';
 
 class nAppBArTheme {
   nAppBArTheme._();
@@ -6,7 +7,7 @@ class nAppBArTheme {
     elevation: 0,
     centerTitle: true,
     scrolledUnderElevation: 0,
-    backgroundColor: Colors.transparent,
+    backgroundColor: nColors.primarycolor,
     surfaceTintColor: Colors.transparent,
     iconTheme: IconThemeData(color: Colors.black, size: 24),
     actionsIconTheme: IconThemeData(color: Colors.black, size: 24),
