@@ -1,22 +1,23 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:to_do_app/Const/Text.dart';
-import 'package:to_do_app/Screens/AuthScreen/SignUpScreen.dart';
+import 'package:to_do_app/Screens/AuthScreen/LoginScreen.dart';
 import 'package:to_do_app/Utils/Decorations/TextformFieldDecoration.dart';
 import 'package:to_do_app/Const/Colors.dart';
 import 'package:to_do_app/Widget/Buttons/RoundButton.dart';
 import 'package:form_validator/form_validator.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final emailcontroller = TextEditingController();
   final passwordcontoller = TextEditingController();
+  final namecontroller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 50),
               Text(
-                nlogin,
+                nsignup,
                 style: Theme.of(context)
                     .textTheme
                     .headlineLarge
@@ -39,6 +40,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: _formkey,
                 child: Column(
                   children: [
+                    TextFormField(
+                      controller: namecontroller,
+                      decoration:
+                          nTextFormFieldDecoration.nTextFormFielsDeco.copyWith(
+                        hintText: 'Name',
+                        prefixIcon: const Icon(
+                          CupertinoIcons.person,
+                          color: nColors.primarycolor,
+                        ),
+                      ),
+                      validator: ValidationBuilder().required().build(),
+                    ),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: emailcontroller,
                       decoration:
@@ -83,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
               RoundButton(
-                buttonname: 'Login',
+                buttonname: nsignup,
                 onTap: () {
                   if (_formkey.currentState!.validate()) {}
                 },
@@ -93,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    ndonotaccount,
+                    nhaveaccount,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   TextButton(
@@ -101,10 +115,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SignUpScreen()));
+                              builder: (context) => const LoginScreen()));
                     },
                     child: Text(
-                      nsignup,
+                      nlogin,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: nColors.linkcolor,
                           ),

@@ -5,3 +5,4 @@ String nlogin = 'Login';
 String nForgotpass = 'Forgot Password?';
 String ndonotaccount = 'Don\'t Have an Account?';
 String nsignup = 'Sign Up';
+String nhaveaccount = 'Already Have an Account?';
