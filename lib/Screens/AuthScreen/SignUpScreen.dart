@@ -9,6 +9,7 @@ import 'package:to_do_app/Utils/Decorations/TextformFieldDecoration.dart';
 import 'package:to_do_app/Const/Colors.dart';
 import 'package:to_do_app/Widget/Buttons/RoundButton.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:to_do_app/Utils/Helper/helper.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final namecontroller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance.collection('Users');
   bool loading = false;
 
   @override
@@ -120,7 +122,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         setState(() {
                           loading = false;
                         });
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()));
                         nHelpper().nsuccesstoast(context, 'SignUp');
+
+                        final User? user = _auth.currentUser;
+                        final _uid = user?.uid;
+                        firestore
+                            .doc(_uid)
+                            .set({
+                              'id': _uid,
+                              'name': namecontroller.text.toString().trim(),
+                              'email': emailcontroller.text.toString().trim(),
+                              'password':
+                                  passwordcontoller.text.toString().trim(),
+                            })
+                            .then((value) {})
+                            .onError((error, stackTrace) {});
                       });
                     } on FirebaseAuthException catch (e) {
                       setState(() {
@@ -128,23 +148,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       });
                       nHelpper().nerrortoast(context, e.code);
                     }
-                    // _auth
-                    //     .createUserWithEmailAndPassword(
-                    //   email: emailcontroller.text.toString().trim(),
-                    //   password: passwordcontoller.text.toString().trim(),
-                    // )
-                    //     .then((value) {
-                    //   setState(() {
-                    //     loading = false;
-                    //   });
-                    //   // nHelpper().ntoastmessage('SignUp Succcessful');
-                    // }).onError((error, stackTrace) {
-                    //   setState(() {
-                    //     loading = false;
-                    //   });
-                    //   // nHelpper().ntoastmessage(error.toString());
-                    //   nHelpper().nerrortoast(context, error.toString());
-                    // });
                   }
                 },
               ),

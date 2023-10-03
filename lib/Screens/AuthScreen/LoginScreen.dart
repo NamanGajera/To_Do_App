@@ -48,8 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
           loading = false;
         });
         nHelpper().nsuccesstoast(context, 'Login');
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
       });
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -57,24 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       nHelpper().nerrortoast(context, e.code);
     }
-    // _auth
-    //     .signInWithEmailAndPassword(
-    //   email: emailcontroller.text.toString().trim(),
-    //   password: passwordcontoller.text.toString().trim(),
-    // )
-    //     .then((value) {
-    //   setState(() {
-    //     loading = false;
-    //   });
-    //   nHelpper().nsuccesstoast(context, 'Login');
-    //   Navigator.pushReplacement(
-    //       context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-    // }).onError((error, stackTrace) {
-    //   setState(() {
-    //     loading = false;
-    //   });
-    //   nHelpper().nerrortoast(context, error.toString());
-    // });
   }
 
   @override
