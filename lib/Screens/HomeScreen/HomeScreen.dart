@@ -8,8 +8,7 @@ import 'package:to_do_app/Const/Colors.dart';
 import 'package:to_do_app/Screens/AuthScreen/LoginScreen.dart';
 import 'package:to_do_app/Utils/Decorations/TextformFieldDecoration.dart';
 import 'package:to_do_app/Utils/Helper/helper.dart';
-import 'package:to_do_app/Widget/Buttons/RoundButton.dart';
-
+import 'package:form_validator/form_validator.dart';
 import 'package:to_do_app/Widget/Buttons/SimpleButton.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,7 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final searchcontroller = TextEditingController();
   final titlecontroller = TextEditingController();
   final descriptioncontoller = TextEditingController();
+  final firestore = FirebaseFirestore.instance.collection('ToDo');
+  final formkey = GlobalKey<FormState>();
   String username = '';
+  bool loading = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -114,6 +116,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
+            titlecontroller.clear();
+            descriptioncontoller.clear();
             showbottomsheet();
           },
           backgroundColor: nColors.primarycolor,
@@ -135,48 +139,88 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> showbottomsheet() {
     return showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         builder: (context) {
-          return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        'Add',
-                        style: Theme.of(context).textTheme.headlineMedium,
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.43,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Form(
+                      key: formkey,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          Text(
+                            'Add',
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: titlecontroller,
+                            decoration: nTextFormFieldDecoration
+                                .nTextFormFielsDeco
+                                .copyWith(
+                              hintText: 'title',
+                            ),
+                            validator: ValidationBuilder().required().build(),
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: descriptioncontoller,
+                            decoration: nTextFormFieldDecoration
+                                .nTextFormFielsDeco
+                                .copyWith(
+                              hintText: 'Description',
+                            ),
+                            maxLines: 4,
+                            validator: ValidationBuilder().required().build(),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: titlecontroller,
-                        decoration: nTextFormFieldDecoration.nTextFormFielsDeco
-                            .copyWith(
-                          hintText: 'title',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: descriptioncontoller,
-                        decoration: nTextFormFieldDecoration.nTextFormFielsDeco
-                            .copyWith(
-                          hintText: 'Description',
-                        ),
-                        maxLines: 4,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                const Spacer(),
-                SimpleButton(
-                  loading: false,
-                  buttonname: 'Add',
-                  onTap: () {},
-                ),
-                const SizedBox(height: 2),
-              ],
+                  const Spacer(),
+                  SimpleButton(
+                    loading: loading,
+                    buttonname: 'Add',
+                    onTap: () {
+                      if (formkey.currentState!.validate()) {
+                        setState(() {
+                          loading = true;
+                        });
+                        User? user = _auth.currentUser;
+                        final _uid = user?.uid;
+                        String id =
+                            DateTime.now().millisecondsSinceEpoch.toString();
+
+                        firestore.doc(_uid).collection('usertodo').doc(id).set({
+                          'id': id,
+                          'title': titlecontroller.text.toString().trim(),
+                          'description':
+                              descriptioncontoller.text.toString().trim(),
+                        }).then((value) {
+                          setState(() {
+                            loading = false;
+                            titlecontroller.clear();
+                            descriptioncontoller.clear();
+                          });
+
+                          nHelpper().nsuccesstoast(context, 'Add Data');
+                        }).onError((error, stackTrace) {
+                          nHelpper().nerrortoast(context, error.toString());
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 2),
+                ],
+              ),
             ),
           );
         });
