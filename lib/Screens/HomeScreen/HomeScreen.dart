@@ -26,22 +26,22 @@ class _HomeScreenState extends State<HomeScreen> {
   final titlecontroller = TextEditingController();
   final descriptioncontoller = TextEditingController();
   final firestore = FirebaseFirestore.instance.collection('ToDo');
+
   final formkey = GlobalKey<FormState>();
   String username = '';
   bool loading = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getdata();
   }
 
   void getdata() async {
     User? user = _auth.currentUser;
-    final _uid = user?.uid;
+    final uid = user?.uid;
 
     final DocumentSnapshot userdoc =
-        await FirebaseFirestore.instance.collection('Users').doc(_uid).get();
+        await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 
     setState(() {
       username = userdoc.get('name');
@@ -50,6 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = _auth.currentUser;
+    final uid = user?.uid;
+    final usertodo = FirebaseFirestore.instance
+        .collection('ToDo')
+        .doc(uid)
+        .collection('usertodo')
+        .snapshots();
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.deepPurple[100],
@@ -111,6 +118,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   hintText: 'Search',
                 ),
               ),
+              const SizedBox(height: 20),
+              StreamBuilder<QuerySnapshot>(
+                  stream: usertodo,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text('Some Error'));
+                    } else {
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: snapshot.data?.docs.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(
+                                snapshot.data!.docs[index]['title'].toString(),
+                              ),
+                              subtitle: Text(
+                                snapshot.data!.docs[index]['description']
+                                    .toString(),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+                  }),
             ],
           ),
         ),
