@@ -5,17 +5,6 @@ import 'package:motion_toast/motion_toast.dart';
 import 'package:motion_toast/resources/arrays.dart';
 
 class nHelpper {
-  // void ntoastmessage(String msg) {
-  //   Fluttertoast.showToast(
-  //     msg: msg,
-  //     backgroundColor: nColors.primarycolor,
-  //     gravity: ToastGravity.BOTTOM,
-  //     textColor: Colors.white,
-  //     toastLength: Toast.LENGTH_SHORT,
-  //     fontSize: 12.0,
-  //   );
-  // }
-
   void Function(PointerDownEvent)? hidekeybord = (event) {
     FocusManager.instance.primaryFocus?.unfocus();
   };
@@ -43,7 +32,7 @@ class nHelpper {
   void nsuccesstoast(BuildContext context, String description) {
     MotionToast toast = MotionToast.success(
       title: const Text(
-        'Successful',
+        'Successfully',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       description: Text(

@@ -10,6 +10,7 @@ import 'package:to_do_app/Utils/Decorations/TextformFieldDecoration.dart';
 import 'package:to_do_app/Utils/Helper/helper.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:to_do_app/Widget/Buttons/SimpleButton.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -24,7 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final _auth = FirebaseAuth.instance;
   final searchcontroller = TextEditingController();
   final titlecontroller = TextEditingController();
-  final descriptioncontoller = TextEditingController();
+  final descriptioncontroller = TextEditingController();
+  final edittitlecontroller = TextEditingController();
+  final editdescriptioncontroller = TextEditingController();
   final firestore = FirebaseFirestore.instance.collection('ToDo');
 
   final formkey = GlobalKey<FormState>();
@@ -141,24 +144,75 @@ class _HomeScreenState extends State<HomeScreen> {
                             final description = snapshot
                                 .data!.docs[index]['description']
                                 .toString();
+                            final id =
+                                snapshot.data!.docs[index]['id'].toString();
+
                             if (searchcontroller.text.isEmpty) {
-                              return Card(
-                                elevation: 3,
-                                color: Colors.deepPurple.shade200,
-                                child: ListTile(
-                                  title: Text(
-                                    snapshot.data!.docs[index]['title']
-                                        .toString(),
-                                    style:
-                                        Theme.of(context).textTheme.titleLarge,
-                                  ),
-                                  subtitle: Text(
-                                    snapshot.data!.docs[index]['description']
-                                        .toString(),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(color: Colors.black54),
+                              return Slidable(
+                                key: const ValueKey(0),
+                                startActionPane: ActionPane(
+                                  motion: const StretchMotion(),
+                                  children: [
+                                    SlidableAction(
+                                      onPressed: (value) {
+                                        showmydialog(title, description, id);
+                                      },
+                                      autoClose: true,
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      flex: 2,
+                                      backgroundColor: Colors.blue.shade300,
+                                      icon: Icons.edit,
+                                      label: 'Edit',
+                                    ),
+                                  ],
+                                ),
+                                endActionPane: ActionPane(
+                                  motion: const StretchMotion(),
+                                  children: [
+                                    SlidableAction(
+                                      onPressed: (value) {
+                                        firestore
+                                            .doc(uid)
+                                            .collection('usertodo')
+                                            .doc(id)
+                                            .delete()
+                                            .then((value) {
+                                          nHelpper()
+                                              .ndeletetoast(context, 'Data');
+                                        }).onError((error, stackTrace) {
+                                          nHelpper().nerrortoast(
+                                              context, error.toString());
+                                        });
+                                      },
+                                      autoClose: true,
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      flex: 2,
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: Colors.red.shade400,
+                                      icon: Icons.delete,
+                                      label: 'Delete',
+                                    ),
+                                  ],
+                                ),
+                                child: Card(
+                                  elevation: 3,
+                                  color: Colors.deepPurple.shade200,
+                                  child: ListTile(
+                                    title: Text(
+                                      snapshot.data!.docs[index]['title']
+                                          .toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
+                                    ),
+                                    subtitle: Text(
+                                      snapshot.data!.docs[index]['description']
+                                          .toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(color: Colors.black54),
+                                    ),
                                   ),
                                 ),
                               );
@@ -200,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             titlecontroller.clear();
-            descriptioncontoller.clear();
+            descriptioncontroller.clear();
             showbottomsheet();
           },
           backgroundColor: nColors.primarycolor,
@@ -216,6 +270,91 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> showmydialog(String title, String description, String id) {
+    edittitlecontroller.text = title;
+    editdescriptioncontroller.text = description;
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          // title: const Text('Update'),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.3,
+            child: Form(
+              key: formkey,
+              child: Column(
+                children: [
+                  Text(
+                    'Update',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    controller: edittitlecontroller,
+                    decoration:
+                        nTextFormFieldDecoration.nTextFormFielsDeco.copyWith(
+                      hintText: 'title',
+                    ),
+                    validator: ValidationBuilder().required().build(),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: editdescriptioncontroller,
+                    decoration: nTextFormFieldDecoration.nTextFormFielsDeco
+                        .copyWith(hintText: 'Description'),
+                    maxLines: 2,
+                    validator: ValidationBuilder().required().build(),
+                  )
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (formkey.currentState!.validate()) {
+                  User? user = _auth.currentUser;
+                  final uid = user?.uid;
+                  firestore.doc(uid).collection('usertodo').doc(id).update({
+                    'title': edittitlecontroller.text.toString().trim(),
+                    'description':
+                        editdescriptioncontroller.text.toString().trim(),
+                  }).then((value) {
+                    Navigator.pop(context);
+                    nHelpper().nsuccesstoast(context, 'Update');
+                  }).onError((error, stackTrace) {
+                    Navigator.pop(context);
+                    nHelpper().nerrortoast(context, error.toString());
+                  });
+                }
+              },
+              child: Text(
+                'Update',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: nColors.primarycolor,
+                    ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Cancle',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: nColors.primarycolor,
+                    ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -255,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
-                            controller: descriptioncontoller,
+                            controller: descriptioncontroller,
                             decoration: nTextFormFieldDecoration
                                 .nTextFormFielsDeco
                                 .copyWith(
@@ -283,13 +422,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           'id': id,
                           'title': titlecontroller.text.toString().trim(),
                           'description':
-                              descriptioncontoller.text.toString().trim(),
+                              descriptioncontroller.text.toString().trim(),
                         }).then((value) {
                           setState(() {
                             titlecontroller.clear();
-                            descriptioncontoller.clear();
+                            descriptioncontroller.clear();
                           });
 
+                          Navigator.pop(context);
                           nHelpper().nsuccesstoast(context, 'Add Data');
                         }).onError((error, stackTrace) {
                           nHelpper().nerrortoast(context, error.toString());
