@@ -2,9 +2,15 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:to_do_app/Const/Colors.dart';
 import 'package:to_do_app/Screens/AuthScreen/LoginScreen.dart';
+import 'package:to_do_app/Utils/Decorations/TextformFieldDecoration.dart';
 import 'package:to_do_app/Utils/Helper/helper.dart';
+import 'package:to_do_app/Widget/Buttons/RoundButton.dart';
+
+import 'package:to_do_app/Widget/Buttons/SimpleButton.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -17,6 +23,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _auth = FirebaseAuth.instance;
+  final searchcontroller = TextEditingController();
+  final titlecontroller = TextEditingController();
+  final descriptioncontoller = TextEditingController();
   String username = '';
   @override
   void initState() {
@@ -41,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.deepPurple[100],
         drawer: const Drawer(),
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -86,17 +96,89 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 8),
           ],
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(
-              child: Text(
-                'welcome $username',
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              TextField(
+                controller: searchcontroller,
+                decoration:
+                    nTextFormFieldDecoration.nTextFormFielsDeco.copyWith(
+                  prefixIcon: const Icon(CupertinoIcons.search),
+                  hintText: 'Search',
+                ),
               ),
-            )
-          ],
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showbottomsheet();
+          },
+          backgroundColor: nColors.primarycolor,
+          elevation: 10,
+          focusColor: nColors.primarycolor,
+          foregroundColor: nColors.primarycolor,
+          child: Text(
+            'Add',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Colors.white),
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> showbottomsheet() {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      Text(
+                        'Add',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: titlecontroller,
+                        decoration: nTextFormFieldDecoration.nTextFormFielsDeco
+                            .copyWith(
+                          hintText: 'title',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: descriptioncontoller,
+                        decoration: nTextFormFieldDecoration.nTextFormFielsDeco
+                            .copyWith(
+                          hintText: 'Description',
+                        ),
+                        maxLines: 4,
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                SimpleButton(
+                  loading: false,
+                  buttonname: 'Add',
+                  onTap: () {},
+                ),
+                const SizedBox(height: 2),
+              ],
+            ),
+          );
+        });
   }
 }
