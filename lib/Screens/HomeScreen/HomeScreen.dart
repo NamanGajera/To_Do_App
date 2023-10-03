@@ -117,6 +117,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   prefixIcon: const Icon(CupertinoIcons.search),
                   hintText: 'Search',
                 ),
+                onChanged: (value) {
+                  setState(() {});
+                },
+                onTapOutside: nHelpper().hidekeybord,
               ),
               const SizedBox(height: 20),
               StreamBuilder<QuerySnapshot>(
@@ -132,15 +136,59 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: ListView.builder(
                           itemCount: snapshot.data?.docs.length,
                           itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(
-                                snapshot.data!.docs[index]['title'].toString(),
-                              ),
-                              subtitle: Text(
-                                snapshot.data!.docs[index]['description']
-                                    .toString(),
-                              ),
-                            );
+                            final title =
+                                snapshot.data!.docs[index]['title'].toString();
+                            final description = snapshot
+                                .data!.docs[index]['description']
+                                .toString();
+                            if (searchcontroller.text.isEmpty) {
+                              return Card(
+                                elevation: 3,
+                                color: Colors.deepPurple.shade200,
+                                child: ListTile(
+                                  title: Text(
+                                    snapshot.data!.docs[index]['title']
+                                        .toString(),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                  subtitle: Text(
+                                    snapshot.data!.docs[index]['description']
+                                        .toString(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(color: Colors.black54),
+                                  ),
+                                ),
+                              );
+                            } else if (title.toLowerCase().contains(
+                                searchcontroller.text
+                                    .toString()
+                                    .toLowerCase())) {
+                              return Card(
+                                elevation: 3,
+                                color: Colors.deepPurple.shade200,
+                                child: ListTile(
+                                  title: Text(
+                                    snapshot.data!.docs[index]['title']
+                                        .toString(),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                  subtitle: Text(
+                                    snapshot.data!.docs[index]['description']
+                                        .toString(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(color: Colors.black54),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return Container();
+                            }
                           },
                         ),
                       );
@@ -222,13 +270,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Spacer(),
                   SimpleButton(
-                    loading: loading,
+                    loading: false,
                     buttonname: 'Add',
                     onTap: () {
                       if (formkey.currentState!.validate()) {
-                        setState(() {
-                          loading = true;
-                        });
                         User? user = _auth.currentUser;
                         final _uid = user?.uid;
                         String id =
@@ -241,7 +286,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               descriptioncontoller.text.toString().trim(),
                         }).then((value) {
                           setState(() {
-                            loading = false;
                             titlecontroller.clear();
                             descriptioncontoller.clear();
                           });
