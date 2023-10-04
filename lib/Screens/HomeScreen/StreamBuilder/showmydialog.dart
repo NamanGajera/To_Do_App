@@ -12,7 +12,7 @@ Future<void> showmydialog(
   String id,
   BuildContext context,
 ) {
-  final _auth = FirebaseAuth.instance;
+  final auth = FirebaseAuth.instance;
   final formkey = GlobalKey<FormState>();
   final edittitlecontroller = TextEditingController();
   final editdescriptioncontroller = TextEditingController();
@@ -23,7 +23,6 @@ Future<void> showmydialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        // title: const Text('Update'),
         content: SizedBox(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height * 0.3,
@@ -62,7 +61,7 @@ Future<void> showmydialog(
           TextButton(
             onPressed: () {
               if (formkey.currentState!.validate()) {
-                User? user = _auth.currentUser;
+                User? user = auth.currentUser;
                 final uid = user?.uid;
                 firestore.doc(uid).collection('usertodo').doc(id).update({
                   'title': edittitlecontroller.text.toString().trim(),

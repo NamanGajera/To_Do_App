@@ -24,7 +24,7 @@ class nHelpper {
       dismissable: true,
     );
     toast.show(context);
-    Future.delayed(const Duration(seconds: 2)).then((value) {
+    Future.delayed(const Duration(seconds: 1)).then((value) {
       toast.dismiss();
     });
   }
