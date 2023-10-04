@@ -24,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailcontroller = TextEditingController();
   final passwordcontoller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  bool passwordvisible = true;
   bool loading = false;
 
   @override
@@ -96,12 +97,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: passwordcontoller,
+                      obscureText: passwordvisible,
                       decoration:
                           nTextFormFieldDecoration.nTextFormFielsDeco.copyWith(
                         hintText: 'Password',
                         prefixIcon: const Icon(
                           CupertinoIcons.lock_circle,
                           color: nColors.primarycolor,
+                        ),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              passwordvisible = !passwordvisible;
+                            });
+                          },
+                          icon: Icon(
+                            passwordvisible
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: nColors.primarycolor,
+                          ),
                         ),
                       ),
                       onTapOutside: nHelpper().hidekeybord,
